@@ -1,0 +1,66 @@
+""" A collection of slow rolling/rolling-apply functions """ 
+
+from numpy.lib.stride_tricks import as_strided 
+import numpy as np
+import pandas as pd
+
+def roll(df, window, **kwargs):
+    v = df.values
+    d0, d1 = v.shape
+    s0, s1 = v.strides
+
+    # memory efficient
+    array3d = as_strided(v, (d0 - (window-1), window, d1), (s0, s0, s1))
+
+    # # this is a little slower
+    # rolled_df = pd.concat({
+    #     row: pd.DataFrame(values, columns=df.columns)
+    #     for row, values in zip(df.iloc[window-1:,].index, array3d)
+    # })
+
+    # this is a little faster
+    a,b,c = array3d.shape    
+    rolled_df = pd.DataFrame(
+        array3d.transpose(2,0,1).reshape(c,-1).T,
+        index = pd.MultiIndex.from_arrays(
+            [np.repeat(df.iloc[window-1:,].index, b), 
+             np.tile(np.arange(b), a)]),
+        columns = df.columns
+    )
+    
+    return rolled_df.groupby(level=0, **kwargs)
+
+# # how to use
+# roll(df, window).apply(your_function)
+# roll(df, window).mean()
+
+
+def groll(df, window): # generator
+    for i in range(df.shape[0] - window + 1):
+        yield pd.DataFrame(df.values[i:i+window, :], 
+                           df.index[i:i+window], 
+                           df.columns)
+
+# # how to use
+# [your_function(subdf, arg1, arg2, ...) for subdf in groll(df, window)]
+
+
+def rolling_apply(df, window, func, *args, min_window=None):
+    # window: number of periods looking back
+    # func: must be an aggregate function
+    # *args: arguments to func if there are any
+    
+    if min_window is None:
+        min_window = window
+    res = pd.Series(np.nan, index=df.index)
+
+    for i in range(1, len(df)):
+        subdf = df.iloc[max(i-window, 0):i, :] # get a subsample, excluding the ith index since iloc starts at 0
+        if len(subdf) >= min_window:
+            idx = df.index[i] # there is no forward looking bias since the ith index does not show up in subdf
+            res[idx] = func(subdf, *args)
+    return res                           
+
+# # how to use
+# rolling_apply(df, window, your_function, arg1, arg2)
+
