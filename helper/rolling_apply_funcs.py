@@ -75,5 +75,5 @@ def rolling_apply_np(
     s1_arr = as_strided(s1.values, shape=(l - window + 1, window), strides=(ls, ls))
     s2_arr = as_strided(s2.values, shape=(l - window + 1, window), strides=(ls, ls))
     for row in range(window-1, l):
-        result[row] = func(s1_arr[row - window+1], s2_arr[row - window+1])
+        result[row] = func(s1_arr[row - window+1], s2_arr[row - window+1], *args)
     return pd.Series(data=result, index=s1.index) 
