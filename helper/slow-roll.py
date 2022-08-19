@@ -5,11 +5,17 @@ import numpy as np
 import pandas as pd
 
 def roll(df: pd.DataFrame, window: int, **kwargs):
-    """Create all rolling subframes and group them by time index and return the 
+    """
+    Create all rolling subframes and group them by time index and return the 
     resulting groupby object for people to call apply() on it. 
 
-    Arguments:
-    window -- number of periods to roll back
+    Parameters
+    ----------
+    df : DataFrame
+    window : int
+        Number of periods to roll back.
+    **kwargs
+        Additional arguments for groupby.
     """
 
     v = df.values
@@ -43,10 +49,14 @@ def roll(df: pd.DataFrame, window: int, **kwargs):
 
 
 def groll(df: pd.DataFrame, window: int): 
-    """Returns a generator that yield each rolling subframe when called.
+    """
+    Returns a generator that yield each rolling subframe when called.
 
-    Arguments:
-    window -- number of periods to roll back
+    Parameters
+    ----------
+    df : DataFrame
+    window : int 
+        Number of periods to roll back.
     """
     for i in range(df.shape[0] - window + 1):
         yield pd.DataFrame(df.values[i:i+window, :], 
@@ -57,21 +67,37 @@ def groll(df: pd.DataFrame, window: int):
 # [your_function(subdf, arg1, arg2, ...) for subdf in groll(df, window)]
 
 
-def rolling_apply(df: pd.DataFrame, window: int, func, *args):
-    """Apply an aggregate function to each rolling subframe and return the 
+def rolling_apply(
+    df: pd.DataFrame, 
+    window: int, 
+    func, 
+    *args, 
+    min_periods: int = None):
+    """
+    Apply an aggregate function to each rolling subframe and return the 
     function outputs in a series. 
 
-    Arguments:
-    window -- number of periods to roll back
-    func -- an aggregate function
-    *args -- arguments to the aggregate function
-    """    
+    Parameters
+    ----------
+    window : int
+        Number of periods to roll back.
+    func : callable (aggregate) function to apply to each rolling subframe.
+    *args 
+        Additional arguments for the callable function.
+    min_periods : int, default None
+        Minimum number of observations in window required to have a value; 
+        otherwise, result is ``np.nan``.
+    """
+    if min_periods is None:
+        min_periods = window
+    
     res = pd.Series(np.nan, index=df.index)
     for i in range(1, len(df)):
         # get a subsample, excluding the ith index since iloc starts at 0
-        subdf = df.iloc[max(i-window, 0):i, :] 
-        idx = df.index[i] # no forward looking bias since ith index not in subdf
-        res[idx] = func(subdf, *args)
+        subdf = df.iloc[max(i-window, 0):i, :]
+        if len(subdf) >= min_periods:
+            idx = df.index[i] # no forward looking bias since ith index not in subdf
+            res[idx] = func(subdf, *args)
     return res
 
 # # how to use
