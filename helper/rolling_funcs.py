@@ -1,4 +1,7 @@
-""" A collection of slow rolling/rolling-apply functions """ 
+""" 
+A collection of rolling functions that operate on a DataFrame. They are 
+designed to be chained with pandas `apply()`. Slow for large datasets.
+""" 
 
 from numpy.lib.stride_tricks import as_strided 
 import numpy as np
@@ -65,41 +68,3 @@ def groll(df: pd.DataFrame, window: int):
 
 # # how to use
 # [your_function(subdf, arg1, arg2, ...) for subdf in groll(df, window)]
-
-
-def rolling_apply(
-    df: pd.DataFrame, 
-    window: int, 
-    func, 
-    *args, 
-    min_periods: int = None):
-    """
-    Apply an aggregate function to each rolling subframe and return the 
-    function outputs in a series. 
-
-    Parameters
-    ----------
-    window : int
-        Number of periods to roll back.
-    func : callable (aggregate) function to apply to each rolling subframe.
-    *args 
-        Additional arguments for the callable function.
-    min_periods : int, default None
-        Minimum number of observations in window required to have a value; 
-        otherwise, result is ``np.nan``.
-    """
-    if min_periods is None:
-        min_periods = window
-    
-    res = pd.Series(np.nan, index=df.index[window-1:])
-    for i in range(1, len(df)+1):
-        # get a subsample, excluding the ith index since iloc starts at 0
-        subdf = df.iloc[max(i-window, 0):i, :]
-        if len(subdf) >= min_periods:
-            idx = df.index[i-1] 
-            res[idx] = func(subdf, *args)
-    return res
-
-# # how to use
-# rolling_apply(df, window, your_function, arg1, arg2)
-
