@@ -34,10 +34,11 @@ def rolling_apply_pd(
     res = pd.Series(np.nan, index=s1.index[window-1:])
     for i in range(1, len(s1)+1):
         # get a subsample, excluding the ith index since iloc starts at 0
-        ss = s1.iloc[max(i-window, 0):i, :]
-        if len(ss) >= window:
+        ss1 = s1.iloc[max(i-window, 0):i]
+        ss2 = s2.iloc[max(i-window, 0):i]
+        if len(ss1) >= window:
             idx = s1.index[i-1] 
-            res[idx] = func(s1, s2, *args)
+            res[idx] = func(ss1, ss2, *args)
     return res
 
 
