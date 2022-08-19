@@ -1,6 +1,11 @@
 """ 
 A collection of rolling functions that operate on a DataFrame. They are 
 designed to be chained with pandas `apply()`. Slow for large datasets.
+These functions don't pad NaN rows to make the index identical with the 
+DataFrame's index, so the result after `apply()` an aggregate function will 
+not contain leading NaNs. This is different from `df.rolling().apply()`, which
+alreays returns a series with leading NaNs so that its index and length are 
+the same with the DataFrame.
 """ 
 
 from numpy.lib.stride_tricks import as_strided 
