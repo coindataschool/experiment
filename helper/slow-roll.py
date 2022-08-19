@@ -5,7 +5,12 @@ import numpy as np
 import pandas as pd
 
 def roll(df: pd.DataFrame, window: int, **kwargs):
-    # window: number of periods to roll back
+    """Create all rolling subframes and group them by time index and return the 
+    resulting groupby object for people to call apply() on it. 
+
+    Arguments:
+    window -- number of periods to roll back
+    """
 
     v = df.values
     d0, d1 = v.shape
@@ -37,8 +42,12 @@ def roll(df: pd.DataFrame, window: int, **kwargs):
 # roll(df, window).mean()
 
 
-def groll(df: pd.DataFrame, window: int): # generator
-    # window: number of periods to roll back
+def groll(df: pd.DataFrame, window: int): 
+    """Returns a generator that yield each rolling subframe when called.
+
+    Arguments:
+    window -- number of periods to roll back
+    """
     for i in range(df.shape[0] - window + 1):
         yield pd.DataFrame(df.values[i:i+window, :], 
                            df.index[i:i+window], 
@@ -49,14 +58,19 @@ def groll(df: pd.DataFrame, window: int): # generator
 
 
 def rolling_apply(df: pd.DataFrame, window: int, func, *args):
-    # window: number of periods to roll back
-    # func: must be an aggregate function
-    # *args: arguments to func if there are any
-    
+    """Apply an aggregate function to each rolling subframe and return the 
+    function outputs in a series. 
+
+    Arguments:
+    window -- number of periods to roll back
+    func -- an aggregate function
+    *args -- arguments to the aggregate function
+    """    
     res = pd.Series(np.nan, index=df.index)
     for i in range(1, len(df)):
-        subdf = df.iloc[max(i-window, 0):i, :] # get a subsample, excluding the ith index since iloc starts at 0
-        idx = df.index[i] # there is no forward looking bias since the ith index does not show up in subdf
+        # get a subsample, excluding the ith index since iloc starts at 0
+        subdf = df.iloc[max(i-window, 0):i, :] 
+        idx = df.index[i] # no forward looking bias since ith index not in subdf
         res[idx] = func(subdf, *args)
     return res
 
