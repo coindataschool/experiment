@@ -71,7 +71,7 @@ def rolling_apply_np(
     result = np.ndarray(shape=s1.shape[0]-window, dtype=float) # drop init nans from the final results
     l = len(s1)
     ls = s1.values.strides[0]
-    result[0:window-1] = np.nan
+    # result[0:window-1] = np.nan
     s1_arr = as_strided(s1.values, shape=(l - window + 1, window), strides=(ls, ls))
     s2_arr = as_strided(s2.values, shape=(l - window + 1, window), strides=(ls, ls))
     for row in range(window-1, l):
