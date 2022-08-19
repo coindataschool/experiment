@@ -31,7 +31,7 @@ def rolling_apply_pd(
         Additional arguments for the callable function.
     """
     
-    res = pd.Series(np.nan, index=s1.index) # index=s1.index[window-1:] drops the initial nans from the final result
+    res = pd.Series(np.nan, index=s1.index[window-1:]) # drops the initial nans from the final result
     for i in range(1, len(s1)+1):
         # get a subsample, excluding the ith index since iloc starts at 0
         ss1 = s1.iloc[max(i-window, 0):i]
@@ -68,7 +68,7 @@ def rolling_apply_np(
     """
     from numpy.lib.stride_tricks import as_strided     
 
-    result = np.ndarray(shape=s1.shape, dtype=float)
+    result = np.ndarray(shape=s1.shape[0]-window, dtype=float) # drop init nans from the final results
     l = len(s1)
     ls = s1.values.strides[0]
     result[0:window-1] = np.nan
