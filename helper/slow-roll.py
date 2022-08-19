@@ -91,7 +91,7 @@ def rolling_apply(
     if min_periods is None:
         min_periods = window
     
-    res = pd.Series(np.nan, index=df.index)
+    res = pd.Series(np.nan, index=df.index[window-1:])
     for i in range(1, len(df)+1):
         # get a subsample, excluding the ith index since iloc starts at 0
         subdf = df.iloc[max(i-window, 0):i, :]
