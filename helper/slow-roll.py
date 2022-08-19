@@ -4,7 +4,9 @@ from numpy.lib.stride_tricks import as_strided
 import numpy as np
 import pandas as pd
 
-def roll(df, window, **kwargs):
+def roll(df: pd.DataFrame, window: int, **kwargs):
+    # window: number of periods to roll back
+
     v = df.values
     d0, d1 = v.shape
     s0, s1 = v.strides
@@ -35,7 +37,8 @@ def roll(df, window, **kwargs):
 # roll(df, window).mean()
 
 
-def groll(df, window): # generator
+def groll(df: pd.DataFrame, window: int): # generator
+    # window: number of periods to roll back
     for i in range(df.shape[0] - window + 1):
         yield pd.DataFrame(df.values[i:i+window, :], 
                            df.index[i:i+window], 
@@ -45,21 +48,17 @@ def groll(df, window): # generator
 # [your_function(subdf, arg1, arg2, ...) for subdf in groll(df, window)]
 
 
-def rolling_apply(df, window, func, *args, min_window=None):
-    # window: number of periods looking back
+def rolling_apply(df: pd.DataFrame, window: int, func, *args):
+    # window: number of periods to roll back
     # func: must be an aggregate function
     # *args: arguments to func if there are any
     
-    if min_window is None:
-        min_window = window
     res = pd.Series(np.nan, index=df.index)
-
     for i in range(1, len(df)):
         subdf = df.iloc[max(i-window, 0):i, :] # get a subsample, excluding the ith index since iloc starts at 0
-        if len(subdf) >= min_window:
-            idx = df.index[i] # there is no forward looking bias since the ith index does not show up in subdf
-            res[idx] = func(subdf, *args)
-    return res                           
+        idx = df.index[i] # there is no forward looking bias since the ith index does not show up in subdf
+        res[idx] = func(subdf, *args)
+    return res
 
 # # how to use
 # rolling_apply(df, window, your_function, arg1, arg2)
