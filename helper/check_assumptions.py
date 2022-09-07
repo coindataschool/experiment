@@ -17,13 +17,14 @@ def check_for_stationarity(x: pd.Series, sig_level=0.01):
     """
 
     pval = adfuller(x)[1]
+    msg = 'p-value = ' + str(pval) + ' The series ' 
+    if x.name != None:
+        msg += x.name
     if pval < sig_level:
-        print('p-value = ' + str(pval) + ' The series ' + x.name +
-              ' is likely stationary.')
+        print(msg + ' is likely stationary.')
         return True
     else:
-        print('p-value = ' + str(pval) + ' The series ' + x.name +
-              ' is likely non-stationary.')
+        print(msg + ' is likely non-stationary.')
         return False
 
 def check_for_normality(x: pd.Series, sig_level=0.01):
@@ -41,13 +42,14 @@ def check_for_normality(x: pd.Series, sig_level=0.01):
     """
 
     pval = jarque_bera(x)[1]
+    msg = 'p-value = ' + str(pval) + ' The series ' 
+    if x.name != None:
+        msg += x.name
     if pval < sig_level:
-        print('p-value = ' + str(pval) + ' The series ' + x.name +
-              ' is likely normally distributed.')
+        print(msg + ' is likely normally distributed.')
         return True
     else:
-        print('p-value = ' + str(pval) + ' The series ' + x.name +
-              ' is likely not normally distributed.')
+        print(msg + ' is likely not normally distributed.')
         return False
 
 def check_for_coint(x1: pd.Series, x2: pd.Series, sig_level=0.01):
@@ -66,13 +68,12 @@ def check_for_coint(x1: pd.Series, x2: pd.Series, sig_level=0.01):
     """
 
     pval = coint(x1, x2)[1]
+    msg = 'p-value = ' + str(pval) + ' The two series ' 
     if pval < sig_level:
-        print('p-value = ' + str(pval) + ' The two series ' + x1.name + 
-              ' and ' + x2.name +' are likely cointegrated.')
+        print(msg + 'are likely cointegrated.')
         return True
     else:
-        print('p-value = ' + str(pval) + ' The two series ' + x1.name + 
-              ' and ' + x2.name +' are likely not cointegrated.')
+        print(msg + 'are likely not cointegrated.')
         return False
 
 # # test
