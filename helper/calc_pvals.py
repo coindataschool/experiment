@@ -1,7 +1,8 @@
 from typing import Union
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.stattools import coint, adfuller, jarque_bera
+from statsmodels.tsa.stattools import coint, adfuller
+from statsmodels.stats.stattools import jarque_bera
 
 def coint_pval(
     s1: Union[np.ndarray, np.array, pd.Series], 
