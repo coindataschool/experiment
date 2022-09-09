@@ -16,7 +16,7 @@ def check_for_stationarity(x: pd.Series, sig_level=0.01):
         Significance level below which we'd conclude statistical significance.
     """
 
-    pval = adfuller(x)[1]
+    pval = adfuller(x)[1]  # the augmented Dickey– Fuller test
     msg = 'p-value = ' + str(pval) + ' The series ' 
     if x.name != None:
         msg += x.name
